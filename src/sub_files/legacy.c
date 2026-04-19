@@ -1,6 +1,6 @@
 #include "../project.h"
 
-void printRevenueViaArray(const Shop* shop) {
+void legacy_print_revenue(const Shop* shop) {
   size_t size_of_tree = treeSize(shop->root);
 
   Game** gamearr = (Game**)calloc(size_of_tree, sizeof(Game*));
@@ -18,24 +18,22 @@ void printRevenueViaArray(const Shop* shop) {
   free(gamearr);
 }
 
-void removeRevenueListLegacy(List** head, Game* game, ErrorCode* err) {
+ErrorCode legacy_remove_revenue(Node** head, Game* game) {
   // Validate input
   if (head == NULL || *head == NULL || game == NULL) {
-    if (err) *err = INVALID_OBJECT;
-    return;
+    return INVALID_OBJECT;
   }
 
   // find the game in the list
-  List* current = *head;
-  List* previous = NULL;
+  Node* current = *head;
+  Node* previous = NULL;
   while (current != NULL && current->game != game) {
     previous = current;
     current = current->next;
   }
   // game not found
   if (current == NULL) {
-    *err = NOT_FOUND;
-    return;
+    return NOT_FOUND;
   }
   // remove current
   if (previous == NULL) {
@@ -46,6 +44,13 @@ void removeRevenueListLegacy(List** head, Game* game, ErrorCode* err) {
 
   // free the removed node
   free(current);
-  *err = SUCCESS;
-  return;
+  return SUCCESS;
+}
+
+Game* legacy_find_previous(Node* head, Game* game) {
+  while (head && head->next) {
+    if (head->next->game == game) return head->game;
+    head = head->next;
+  }
+  return NULL;
 }

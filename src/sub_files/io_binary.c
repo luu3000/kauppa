@@ -1,6 +1,6 @@
 #include "../project.h"
 
-ErrorCode write_game_binary(Game* game, FILE* file_ptr) {
+ErrorCode io_binary_write_game(Game* game, FILE* file_ptr) {
   size_t len = strlen(game->name);
 
   if (fwrite(&len, sizeof(len), 1, file_ptr) != 1) return FILE_ERROR;
@@ -11,28 +11,28 @@ ErrorCode write_game_binary(Game* game, FILE* file_ptr) {
   return SUCCESS;
 }
 
-ErrorCode write_tree_binary(Node* node, FILE* file_ptr) {
+ErrorCode io_binary_write_tree(Vertex* node, FILE* file_ptr) {
   if (node == NULL) {
     return SUCCESS;
   }
 
-  ErrorCode left = write_tree_binary(node->left, file_ptr);
+  ErrorCode left = io_binary_write_tree(node->left, file_ptr);
   if (left != SUCCESS) return left;
 
-  ErrorCode game_result = write_game_binary(node->game, file_ptr);
+  ErrorCode game_result = io_binary_write_game(node->game, file_ptr);
   if (game_result != SUCCESS) return game_result;
 
-  ErrorCode right = write_tree_binary(node->right, file_ptr);
+  ErrorCode right = io_binary_write_tree(node->right, file_ptr);
   if (right != SUCCESS) return right;
 
   return SUCCESS;
 }
 
-ErrorCode write_binary(const char* filename, const Shop* shop) {
+ErrorCode io_binary_write(const char* filename, const Shop* shop) {
   FILE* file_ptr = fopen(filename, "wb");
   if (!file_ptr) return FILE_ERROR;
 
-  ErrorCode result = write_tree_binary(shop->root, file_ptr);
+  ErrorCode result = io_binary_write_tree(shop->root, file_ptr);
   if (result != SUCCESS) {
     fclose(file_ptr);
     return result;
@@ -44,14 +44,7 @@ ErrorCode write_binary(const char* filename, const Shop* shop) {
   return error ? FILE_ERROR : SUCCESS;
 }
 
-static void free_game_array(Game* array, int count) {
-  for (int i = 0; i < count; i++) {
-    free(array[i].name);
-  }
-  free(array);
-}
-
-Game* read_game_binary(FILE* file_ptr, ErrorCode* err) {
+Game* io_binary_read_game(FILE* file_ptr, ErrorCode* err) {
   // read length of name
   size_t len;
   if (fread(&len, sizeof(len), 1, file_ptr) != 1) {
@@ -100,7 +93,7 @@ whaterror:
   return NULL;
 }
 
-Shop* read_binary(const char* filename, ErrorCode* err) {
+Shop* io_binary_read(const char* filename, ErrorCode* err) {
   FILE* file_ptr = fopen(filename, "rb");
   if (!file_ptr) {
     if (err) *err = FILE_ERROR;
@@ -113,7 +106,7 @@ Shop* read_binary(const char* filename, ErrorCode* err) {
 
   while (1) {
     ErrorCode read_err;
-    Game* temp = read_game_binary(file_ptr, &read_err);
+    Game* temp = io_binary_read_game(file_ptr, &read_err);
     if (!temp) {
       if (read_err == IO_EOF) {
         break;
@@ -151,7 +144,7 @@ Shop* read_binary(const char* filename, ErrorCode* err) {
     return shop;
   }
 
-  shop->root = build_balanced(&array, 0, count - 1, err);
+  shop->root = bst_build_from_sorted_array(&array, 0, count - 1, err);
   if (!shop->root) {
     if (err && *err == SUCCESS) *err = OUT_OF_MEMORY;
     goto cleanup;
@@ -160,8 +153,7 @@ Shop* read_binary(const char* filename, ErrorCode* err) {
   free_game_array(array, count);
   array = NULL;
 
-  ErrorCode list_err;
-  buildRevenueListFromTree(shop->root, &shop->revenue, &list_err);
+  ErrorCode list_err = list_rebuild_from_bst(shop->root, &shop->revenue);
   if (list_err != SUCCESS) {
     if (err) *err = list_err;
     goto cleanup;

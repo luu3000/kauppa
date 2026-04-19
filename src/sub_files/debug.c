@@ -1,44 +1,38 @@
 #include "../project.h"
 
-void printShop(const Shop* shop) { printTree(shop, shop->root, 0); }
-
-Game* findPrevious(List* head, Game* game) {
-  while (head && head->next) {
-    if (head->next->game == game) return head->game;
-    head = head->next;
-  }
-  return NULL;
+void debug_print_shop(const Shop* shop) {
+  debug_print_bst(shop, shop->root, 0);
 }
 
-void printTab(int num) {
+void debug_print_tab(int num) {
   for (int i = 0; i < num; i++) {
     printf("\t");
   }
 }
 
-void printTree(const Shop* shop, Node* node, int depth) {
-  if (node == NULL) return;
+void debug_print_bst(const Shop* shop, Vertex* vertex, int depth) {
+  if (vertex == NULL) return;
 
-  printTab(depth);
-  printGame(node->game);
+  debug_print_tab(depth);
+  printGame(vertex->game);
 
-  printTab(depth);
-  Game* prev = findPrevious(shop->revenue, node->game);
+  debug_print_tab(depth);
+  Game* prev = legacy_find_previous(shop->revenue, vertex->game);
   if (prev) {
     printf("is connected to %s\n", prev->name);
   } else {
     printf("is connected to <none>\n");
   }
 
-  if (node->left != NULL) {
-    printTab(depth + 1);
+  if (vertex->left != NULL) {
+    debug_print_tab(depth + 1);
     printf("left\n");
-    printTree(shop, node->left, depth + 1);
+    debug_print_bst(shop, vertex->left, depth + 1);
   }
-  if (node->right != NULL) {
-    printTab(depth + 1);
+  if (vertex->right != NULL) {
+    debug_print_tab(depth + 1);
     printf("right\n");
-    printTree(shop, node->right, depth + 1);
+    debug_print_bst(shop, vertex->right, depth + 1);
   }
 }
 

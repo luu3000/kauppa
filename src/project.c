@@ -18,7 +18,7 @@ int main(void) {
     printf("ERROR: Failed to allocate database.\n");
     return 1;
   }
-  initShop(shop);
+  init_shop(shop);
 
   int loop = true;
   char* command = malloc(1000);  // guideline 1.1.I
@@ -39,9 +39,9 @@ int main(void) {
           break;
         }
         name = strcat(name, ".txt");
-        err = addGame(shop, name, price);
+        err = add_game(shop, name, price);
         if (err != SUCCESS) {
-          printError(err);
+          debug_print_error(err);
         } else {
           printf("SUCCESS\n");
         }
@@ -57,9 +57,9 @@ int main(void) {
           break;
         }
         name = strcat(name, ".txt");
-        err = buyGame(shop, name, count);
+        err = buy_game(shop, name, count);
         if (err != SUCCESS) {
-          printError(err);
+          debug_print_error(err);
         } else {
           printf("SUCCESS\n");
         }
@@ -67,7 +67,7 @@ int main(void) {
         break;
       }
       case 'L':
-        printRevenue(shop);
+        print_revenue(shop);
         printf("SUCCESS\n");
         break;
       case 'W':
@@ -75,9 +75,9 @@ int main(void) {
           printf("Invalid command W\n");
           break;
         }
-        err = write_plaintext(filename, shop);
+        err = io_text_write(filename, shop);
         if (err != SUCCESS) {
-          printError(err);
+          debug_print_error(err);
         } else {
           printf("SUCCESS\n");
         }
@@ -87,12 +87,12 @@ int main(void) {
           printf("Invalid command O\n");
           break;
         }
-        Shop* new_shop = read_plaintext(filename, &err);
+        Shop* new_shop = io_text_read(filename, &err);
         if (err != SUCCESS || new_shop == NULL) {
-          printError(err);
+          debug_print_error(err);
           break;
         }
-        freeShop(shop);
+        free_shop(shop);
         shop = new_shop;
         printf("SUCCESS\n");
         break;
@@ -103,7 +103,7 @@ int main(void) {
     }
   }
 
-  freeShop(shop);
+  free_shop(shop);
   free(command);
   printf("SUCCESS\n");
   return 0;

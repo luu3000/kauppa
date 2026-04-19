@@ -1,25 +1,25 @@
 #include "../project.h"
 
-void initShop(Shop* shop) {
+void init_shop(Shop* shop) {
   shop->root = NULL;
   shop->revenue = NULL;
 }
 
-void freeShop(Shop* shop) {
+void free_shop(Shop* shop) {
   freeRevenueList(shop->revenue);
   freeTree(shop->root);
   free(shop);
 }
 
-void freeRevenueList(List* head) {
+void free_revenue_list(Node* head) {
   while (head) {
-    List* tmp = head;
+    Node* tmp = head;
     head = head->next;
     free(tmp);
   }
 }
 
-Game* createGame(const char* name, double price, ErrorCode* err) {
+Game* create_game(const char* name, double price, ErrorCode* err) {
   if (!name || strlen(name) >= MAX_STRING_LENGTH) {
     if (err) *err = INVALID_ARGUMENT;
     return NULL;
@@ -44,27 +44,27 @@ Game* createGame(const char* name, double price, ErrorCode* err) {
   return game;
 }
 
-void freeGame(Game* game) {
+void free_game(Game* game) {
   free(game->name);
   free(game);
 }
 
-Node* createNode(Game* game, ErrorCode* err) {
-  Node* node = (Node*)malloc(sizeof(Node));
+Vertex* create_vertex(Game* game, ErrorCode* err) {
+  Vertex* node = (Vertex*)malloc(sizeof(Vertex));
   if (!node) {
-    if (game) freeGame(game);
+    if (game) free_game(game);
     if (err) *err = OUT_OF_MEMORY;
     return NULL;
   }
   node->game = game;
   node->left = NULL;
   node->right = NULL;
-  node->list_node = NULL;
+  node->node = NULL;
   return node;
 }
 
-List* createListNode(Game* game, ErrorCode* err) {
-  List* node = (List*)malloc(sizeof(List));
+Node* createListNode(Game* game, ErrorCode* err) {
+  Node* node = (Node*)malloc(sizeof(Node));
   if (!node) {
     if (err) *err = OUT_OF_MEMORY;
     return NULL;

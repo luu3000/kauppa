@@ -3,31 +3,31 @@
 #include "../project.h"
 
 // wrapper
-#include "shop.c"
+#include "../sub_files/shop.c"
 // database
-#include "bst.c"
-#include "revenue.c"
+#include "../sub_files/bst.c"
+#include "../sub_files/revenue.c"
 // io
-#include "io_binary.c"
-#include "io_plain.c"
+#include "../sub_files/io_binary.c"
+#include "../sub_files/io_plain.c"
 // other
-#include "debug.c"
-#include "legacy.c"
+#include "../sub_files/debug.c"
+#include "../sub_files/legacy.c"
 
 int main(void) {
   ErrorCode err;
-  Shop* shop = read_plaintext("../pelit", &err);
+  Shop* shop = io_text_read("../pelit", &err);
   if (!shop) {
     printError(err);
     return 1;
   }
 
   printf("Loaded shop:\n");
-  printShop(shop);
+  print_shop(shop);
 
   printf("Revenue list:\n");
-  printRevenue(shop);
+  print_revenue(shop);
 
-  freeShop(shop);
+  free_shop(shop);
   return 0;
 }

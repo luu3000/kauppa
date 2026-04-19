@@ -2,7 +2,7 @@
 
 #include "../project.h"
 
-List* insertRevenueList(List** head, Game* game, ErrorCode* err) {
+Node* list_insert_node(Node** head, Game* game, ErrorCode* err) {
   // Validate input
   if (head == NULL || game == NULL) {
     if (err) *err = INVALID_OBJECT;
@@ -10,7 +10,7 @@ List* insertRevenueList(List** head, Game* game, ErrorCode* err) {
   }
 
   // Create new list node
-  List* node = createListNode(game, err);
+  Node* node = createListNode(game, err);
   if (!node) {
     if (err) *err = OUT_OF_MEMORY;
     return NULL;
@@ -31,7 +31,7 @@ List* insertRevenueList(List** head, Game* game, ErrorCode* err) {
     return node;
   }
   // find insertion point
-  List* current = *head;
+  Node* current = *head;
   while (current->next && current->next->game->revenue > game->revenue) {
     current = current->next;
   }
@@ -48,15 +48,14 @@ List* insertRevenueList(List** head, Game* game, ErrorCode* err) {
   return node;
 }
 
-void removeRevenueList(List** head, Node* node, ErrorCode* err) {
+ErrorCode list_remove_node(Node** head, Vertex* node) {
   // Validate input
   if (head == NULL || *head == NULL || node == NULL) {
-    if (err) *err = INVALID_OBJECT;
-    return;
+    return INVALID_OBJECT;
   }
 
-  List* prev = node->list_node ? node->list_node->prev : NULL;
-  List* next = node->list_node ? node->list_node->next : NULL;
+  Node* prev = node->node ? node->node->prev : NULL;
+  Node* next = node->node ? node->node->next : NULL;
 
   // Remove node from list
   if (prev) {
@@ -68,26 +67,12 @@ void removeRevenueList(List** head, Node* node, ErrorCode* err) {
     next->prev = prev;
   }
   // free the removed node
-  free(node->list_node);
-  *err = SUCCESS;
-  return;
+  free(node->node);
+  return SUCCESS;
 }
 
-int cmprevenue(const void* a, const void* b) {
-  const Game* g1 = *(const Game**)a;
-  const Game* g2 = *(const Game**)b;
-  return (g1->revenue < g2->revenue) - (g1->revenue > g2->revenue);
-}
-
-void makeList(Node* root, Game** arr, size_t* index) {
-  if (!root) return;
-  makeList(root->left, arr, index);
-  arr[*index] = root->game;
-  (*index)++;
-  makeList(root->right, arr, index);
-}
-
-void attachListNodes(Node* root, Game** arr, Node* list_nodes, size_t* index) {
+void attachListNodes(Vertex* root, Game** arr, Node* list_nodes,
+                     size_t* index) {
   if (!root) return;
 
   attachListNodes(root->left, arr, list_nodes, index);
@@ -95,7 +80,7 @@ void attachListNodes(Node* root, Game** arr, Node* list_nodes, size_t* index) {
   // arr[*index] corresponds to this root->game
   // list_nodes[*index] is the newly created List node
   if (root->game == arr[*index]) {
-    root->list_node = list_nodes[*index].list_node;
+    root->node = &list_nodes[*index];
   }
 
   (*index)++;
@@ -103,10 +88,9 @@ void attachListNodes(Node* root, Game** arr, Node* list_nodes, size_t* index) {
   attachListNodes(root->right, arr, list_nodes, index);
 }
 
-void buildRevenueListFromTree(Node* node, List** revenue, ErrorCode* err) {
+ErrorCode list_rebuild_from_bst(Vertex* node, Node** head) {
   if (node == NULL) {
-    if (err) *err = SUCCESS;
-    return;
+    return SUCCESS;
   }
   // slow but simple: insert each game into the list one by one
   /*
@@ -118,36 +102,39 @@ void buildRevenueListFromTree(Node* node, List** revenue, ErrorCode* err) {
   // faster approach: collect games into array, sort by revenue, build list
   //-- a previously discarded approach to form the revenue print.
 
-  size_t size_of_tree = treeSize(node);
+  // Get size of BST to allocate array
+  size_t size_of_tree = bst_size(node);
 
+  // Collect games into array
   Game** gamearr = (Game**)calloc(size_of_tree, sizeof(Game*));
   if (!gamearr) {
-    if (err) *err = OUT_OF_MEMORY;
-    return;
+    return OUT_OF_MEMORY;
   }
 
   size_t index = 0;
-  makeList(node, gamearr, &index);
+  bst_make_array(node, gamearr, &index);
   size_t size_of_revenue_list = index;
 
-  qsort(gamearr, size_of_revenue_list, sizeof(Game*), cmprevenue);
+  // Sort array by revenue
+  qsort(gamearr, size_of_revenue_list, sizeof(Game*), list_revenue_compare);
 
-  Node* list_nodes = build_balanced(gamearr, 0, size_of_revenue_list - 1, err);
-  if (!list_nodes) {
+  // Build linked list from sorted array
+  ErrorCode err;
+  Vertex* list =
+      bst_build_from_sorted_array(gamearr, 0, size_of_revenue_list - 1, &err);
+  if (!list) {
     free(gamearr);
-    if (err && *err == SUCCESS) *err = OUT_OF_MEMORY;
-    return;
+    return err != SUCCESS ? err : OUT_OF_MEMORY;
   }
 
-  *revenue =
-      list_nodes->list_node;  // head of the list is the first node in the
+  *head = list->node;  // head of the list is the first node in the
 
   index = 0;
-  attachListNodes(node, gamearr, list_nodes, &index);
+  attachListNodes(node, gamearr, list, &index);
 }
 
 void printRevenue(const Shop* shop) {
-  List* current = shop->revenue;
+  Node* current = shop->revenue;
   while (current != NULL) {
     printGame(current->game);
     current = current->next;
@@ -155,3 +142,24 @@ void printRevenue(const Shop* shop) {
 }
 
 void printGame(Game* game) { write_game_plaintext(game, stdout); }
+
+void bst_make_array(Vertex* root, Game** arr, size_t* index) {
+  if (!root) return;
+  bst_make_array(root->left, arr, index);
+  arr[*index] = root->game;
+  (*index)++;
+  bst_make_array(root->right, arr, index);
+}
+
+void free_game_array(Game* array, int count) {
+  for (int i = 0; i < count; i++) {
+    free(array[i].name);
+  }
+  free(array);
+}
+
+int list_revenue_compare(const void* a, const void* b) {
+  const Game* g1 = *(const Game**)a;
+  const Game* g2 = *(const Game**)b;
+  return (g1->revenue < g2->revenue) - (g1->revenue > g2->revenue);
+}

@@ -1,12 +1,6 @@
 #include "../project.h"
 
-static int cmp_game_name(const void* a, const void* b) {
-  const Game* ga = *(const Game**)a;
-  const Game* gb = *(const Game**)b;
-  return strcmp(ga->name, gb->name);
-}
-
-ErrorCode write_game_plaintext(Game* game, FILE* file_ptr) {
+ErrorCode io_text_write_game(Game* game, FILE* file_ptr) {
   if (fprintf(file_ptr, "\"%s\" %.2f %.2f\n", game->name, game->price,
               game->revenue) < 0) {
     return FILE_ERROR;
@@ -22,27 +16,27 @@ ErrorCode write_game_plaintext(Game* game, FILE* file_ptr) {
     }                            \
   } while (0)
 
-ErrorCode write_tree_plaintext(Node* node, FILE* file_ptr) {
+ErrorCode io_text_write_tree(Vertex* node, FILE* file_ptr) {
   if (node == NULL) {
     return SUCCESS;
   }
-  ErrorCode left = write_tree_plaintext(node->left, file_ptr);
+  ErrorCode left = io_text_write_tree(node->left, file_ptr);
   iferror_or_success(left);
-  ErrorCode current = write_game_plaintext(node->game, file_ptr);
+  ErrorCode current = io_text_write_game(node->game, file_ptr);
   iferror_or_success(current);
-  ErrorCode right = write_tree_plaintext(node->right, file_ptr);
+  ErrorCode right = io_text_write_tree(node->right, file_ptr);
   iferror_or_success(right);
 
   return SUCCESS;
 }
 
-ErrorCode write_plaintext(const char* filename, const Shop* shop) {
+ErrorCode io_text_write(const char* filename, const Shop* shop) {
   FILE* file = fopen(filename, "w");
   if (file == NULL) {
     return FILE_ERROR;
   }
 
-  ErrorCode result = write_tree_plaintext(shop->root, file);
+  ErrorCode result = io_text_write_tree(shop->root, file);
   if (result != SUCCESS) {
     fclose(file);
     return result;
@@ -52,7 +46,7 @@ ErrorCode write_plaintext(const char* filename, const Shop* shop) {
   return error ? FILE_ERROR : SUCCESS;
 }
 
-Shop* read_plaintext(const char* filename, ErrorCode* err) {
+Shop* io_text_read(const char* filename, ErrorCode* err) {
   FILE* file_ptr = fopen(filename, "r");
   if (!file_ptr) {
     if (err) *err = FILE_ERROR;
@@ -77,7 +71,7 @@ Shop* read_plaintext(const char* filename, ErrorCode* err) {
       continue;
     }
 
-    Game* game = createGame(namebuf, price, err);
+    Game* game = create_game(namebuf, price, err);
     if (!game) {
       if (err) *err = OUT_OF_MEMORY;
       goto cleanup;
@@ -86,7 +80,7 @@ Shop* read_plaintext(const char* filename, ErrorCode* err) {
 
     Game** newarray = realloc(array, sizeof(Game*) * (count + 1));
     if (!newarray) {
-      freeGame(game);
+      free_game(game);
       if (err) *err = OUT_OF_MEMORY;
       goto cleanup;
     }
@@ -103,7 +97,7 @@ Shop* read_plaintext(const char* filename, ErrorCode* err) {
     if (err) *err = OUT_OF_MEMORY;
     goto cleanup;
   }
-  initShop(shop);
+  init_shop(shop);
 
   if (count == 0) {
     if (err) *err = SUCCESS;
@@ -113,7 +107,7 @@ Shop* read_plaintext(const char* filename, ErrorCode* err) {
   // Sort array by name for balanced tree
   qsort(array, count, sizeof(Game*), cmp_game_name);
 
-  shop->root = build_balanced(array, 0, count - 1, err);
+  shop->root = bst_build_from_sorted_array(array, 0, count - 1, err);
   if (!shop->root) {
     if (err && *err == SUCCESS) *err = OUT_OF_MEMORY;
     goto cleanup;
@@ -122,8 +116,7 @@ Shop* read_plaintext(const char* filename, ErrorCode* err) {
   free(array);
   array = NULL;
 
-  ErrorCode list_err = SUCCESS;
-  buildRevenueListFromTree(shop->root, &shop->revenue, &list_err);
+  ErrorCode list_err = list_rebuild_from_bst(shop->root, &shop->revenue);
   if (list_err != SUCCESS) {
     if (err) *err = list_err;
     goto cleanup;
@@ -142,4 +135,10 @@ cleanup:
   }
   if (shop) freeShop(shop);
   return NULL;
+}
+
+int cmp_game_name(const void* a, const void* b) {
+  const Game* ga = *(const Game**)a;
+  const Game* gb = *(const Game**)b;
+  return strcmp(ga->name, gb->name);
 }
