@@ -185,14 +185,15 @@ Shop* io_binary_read(const char* filename, ErrorCode* err) {
     if (err && *err == SUCCESS) *err = OUT_OF_MEMORY;
     goto cleanup;
   }
-  free(array);
-  array = NULL;
 
   ErrorCode list_err = list_rebuild_from_bst(shop->root, &shop->revenue);
   if (list_err != SUCCESS) {
     if (err) *err = list_err;
     goto cleanup;
   }
+
+  free(array);
+  array = NULL;
 
   if (err) *err = SUCCESS;
   return shop;

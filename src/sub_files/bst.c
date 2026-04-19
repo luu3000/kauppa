@@ -1,8 +1,8 @@
 #include "../project.h"
 
 ErrorCode shop_add_game(Shop* shop, const char* name, double price) {
+  ErrorCode err = SUCCESS;
   // Create the Game object
-  ErrorCode err;
   Game* game = create_game(name, price, &err);
   if (!game) {
     return err;
@@ -33,18 +33,29 @@ Vertex* bst_add_game_vertex(Vertex* root, Vertex* next, ErrorCode* err) {
   // Base case: found the insertion point
   if (root == NULL) {
     return next;
-  } else {  // Compare game names to determine direction
-    int comp = strcmp(next->game->name, root->game->name);
-    if (comp < 0) {
-      root->left = bst_add_game_vertex(root->left, next, err);  // go left
-    } else if (comp > 0) {
-      root->right = bst_add_game_vertex(root->right, next, err);  // go right
-    } else {
-      if (err) *err = GAME_IN_SYSTEM;
-      return root;  // duplicate name
-    }
+  }
+  // Compare game names to determine direction
+  // Validate inputs
+  /*if (!next || !next->game || !next->game->name) {
+    if (err) *err = INVALID_OBJECT;
     return root;
   }
+
+  if (!root->game || !root->game->name) {
+    if (err) *err = INVALID_OBJECT;
+    return root;
+  }*/
+
+  int comp = strcmp(next->game->name, root->game->name);
+  if (comp < 0) {
+    root->left = bst_add_game_vertex(root->left, next, err);  // go left
+  } else if (comp > 0) {
+    root->right = bst_add_game_vertex(root->right, next, err);  // go right
+  } else {
+    if (err) *err = GAME_IN_SYSTEM;
+    return root;  // duplicate name
+  }
+  return root;
 }
 
 ErrorCode shop_buy_game(Shop* shop, const char* name, int count) {
@@ -75,15 +86,33 @@ Vertex* bst_buy_game_vertex(Vertex* root, const char* name, ErrorCode* err) {
   if (root == NULL) {
     if (err) *err = NOT_FOUND;
     return NULL;  // game not found
-  } else {        // Compare game names to determine direction
-    int comp = strcmp(name, root->game->name);
-    if (comp < 0) {
-      return bst_buy_game_vertex(root->left, name, err);  // go left
-    } else if (comp > 0) {
-      return bst_buy_game_vertex(root->right, name, err);  // go right
-    } else {
-      return root;  // found the node of the game
-    }
+  }  // Compare game names to determine direction
+  /*
+  if (name == NULL) {
+    if (err) *err = INVALID_ARGUMENT;
+    return NULL;
+  }
+  if (root->game == NULL) {
+    if (err) *err = INVALID_OBJECT;
+    return NULL;
+  }
+  if (root->game->name == NULL) {
+    if (err) *err = INVALID_OBJECT;
+    return NULL;
+  }
+
+
+  // Debug output
+  printf("Comparing: '%s' vs '%s'\n", name, root->game->name);
+  */
+
+  int comp = strcmp(name, root->game->name);
+  if (comp < 0) {
+    return bst_buy_game_vertex(root->left, name, err);  // go left
+  } else if (comp > 0) {
+    return bst_buy_game_vertex(root->right, name, err);  // go right
+  } else {
+    return root;  // found the node of the game
   }
 }
 

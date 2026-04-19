@@ -231,6 +231,7 @@ ErrorCode list_rebuild_from_bst(const Vertex* node, Node** head);
  *
  *
  */
+
 void attachListNodes(Vertex* root, Game** arr, Vertex** list_nodes,
                      size_t* index);
 

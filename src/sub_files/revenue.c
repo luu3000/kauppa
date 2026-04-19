@@ -93,6 +93,7 @@ void attachListNodes(Vertex* root, Game** arr, Vertex** list_nodes,
 
 ErrorCode list_rebuild_from_bst(const Vertex* node, Node** head) {
   if (node == NULL) {
+    *head = NULL;
     return SUCCESS;
   }
   // slow but simple: insert each game into the list one by one
@@ -116,15 +117,13 @@ ErrorCode list_rebuild_from_bst(const Vertex* node, Node** head) {
 
   size_t index = 0;
   bst_make_array(node, gamearr, &index);
-  size_t size_of_revenue_list = index;
 
   // Sort array by revenue
-  qsort(gamearr, size_of_revenue_list, sizeof(Game*), list_revenue_compare);
+  qsort(gamearr, index, sizeof(Game*), list_revenue_compare);
 
   // Build linked list from sorted array
   ErrorCode err;
-  Vertex* list =
-      bst_build_from_sorted_array(gamearr, 0, size_of_revenue_list - 1, &err);
+  Vertex* list = bst_build_from_sorted_array(gamearr, 0, index - 1, &err);
   if (!list) {
     free(gamearr);
     return err != SUCCESS ? err : OUT_OF_MEMORY;
@@ -146,6 +145,7 @@ void print_revenue(const Shop* shop) {
 }
 
 ErrorCode print_game(const Game* game) {
+  // wrapper to use io fuctions
   if (game) {
     io_text_write_game(game, stdout);
     return SUCCESS;
@@ -154,6 +154,7 @@ ErrorCode print_game(const Game* game) {
 }
 
 void bst_make_array(const Vertex* root, Game** arr, size_t* index) {
+  // inorder listing of vertexes into list
   if (!root) return;
   bst_make_array(root->left, arr, index);
   arr[*index] = root->game;

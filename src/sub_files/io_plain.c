@@ -121,23 +121,34 @@ Shop* io_text_read(const char* filename, ErrorCode* err) {
     return shop;
   }
 
-  // Sort array by name for balanced tree
-  qsort(array, count, sizeof(Game*), cmp_game_name);
+  Game** bst_array = calloc(count, sizeof(Game*));
+  memcpy(bst_array, array, count * sizeof(Game*));
 
-  shop->root = bst_build_from_sorted_array(array, 0, count - 1, err);
+  // Sort array by name for balanced tree
+  qsort(bst_array, count, sizeof(Game*), cmp_game_name);
+  shop->root = bst_build_from_sorted_array(bst_array, 0, count - 1, err);
   if (!shop->root) {
     if (err && *err == SUCCESS) *err = OUT_OF_MEMORY;
     goto cleanup;
   }
+  free(bst_array);
 
+  qsort(array, count, sizeof(Game*), list_revenue_compare);
+
+  Node* prev = NULL;
+  shop->revenue = NULL;
+
+  for (int i = 0; i < count; i++) {
+    Node* node = create_node(array[i], err);
+    node->prev = prev;
+    if (prev)
+      prev->next = node;
+    else
+      shop->revenue = node;
+    prev = node;
+  }
   free(array);
   array = NULL;
-
-  ErrorCode list_err = list_rebuild_from_bst(shop->root, &shop->revenue);
-  if (list_err != SUCCESS) {
-    if (err) *err = list_err;
-    goto cleanup;
-  }
 
   if (err) *err = SUCCESS;
   return shop;

@@ -10,7 +10,7 @@
 #include "../sub_files/io_plain.c"
 // other
 #include "../sub_files/debug.c"
-// #include "../sub_files/legacy.c"
+#include "../sub_files/legacy.c"
 
 int main(void) {
   printf("=== Testing Shop Implementations ===\n");
