@@ -12,6 +12,7 @@ void debug_print_tabs(int num) {
 }
 
 Game* find_previous(Vertex* vertex) {
+  if (!vertex) return NULL;
   if (vertex->node) {                   // test node exists
     if (vertex->node->prev) {           // test it has previous
       return vertex->node->prev->game;  // return the game
@@ -20,8 +21,9 @@ Game* find_previous(Vertex* vertex) {
   return NULL;
 }
 
-void debug_print_bst(const Shop* shop, Vertex* vertex, int depth) {
-  // if (vertex == NULL) return; // Basecase optional as the if statments mean
+ErrorCode debug_print_bst(const Shop* shop, Vertex* vertex, int depth) {
+  if (vertex == NULL)
+    return SUCCESS;  // Basecase optional as the if statments mean
   // never called
 
   // whoami

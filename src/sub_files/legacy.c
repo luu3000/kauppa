@@ -8,14 +8,14 @@ void legacy_print_revenue(const Shop* shop) {
   if (!gamearr) {
     return;
   }
-  int index = 0;
-  makeList(shop->root, gamearr, &index);
+  size_t index = 0;
+  bst_make_array(shop->root, gamearr, &index);
   size_t size_of_list = index;
   // sort
   qsort(gamearr, size_of_list, sizeof(Game*), list_revenue_compare);
   // print
   for (size_t i = 0; i < size_of_list; i++) {
-    printGame(gamearr[i]);
+    print_game(gamearr[i]);
   }
   free(gamearr);
 }

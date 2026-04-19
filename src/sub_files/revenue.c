@@ -10,7 +10,7 @@ Node* list_insert_node(Node** head, Game* game, ErrorCode* err) {
   }
 
   // Create new list node
-  Node* node = createListNode(game, err);
+  Node* node = create_node(game, err);
   if (!node) {
     if (err) *err = OUT_OF_MEMORY;
     return NULL;
@@ -37,12 +37,11 @@ Node* list_insert_node(Node** head, Game* game, ErrorCode* err) {
   }
   // insert after current
   node->next = current->next;
-  current->next = node;
-
-  node->prev = current;
   if (current->next) {
     current->next->prev = node;
   }
+  current->next = node;
+  node->prev = current;
 
   if (err) *err = SUCCESS;
   return node;
@@ -68,10 +67,11 @@ ErrorCode list_remove_node(Node** head, Vertex* node) {
   }
   // free the removed node
   free(node->node);
+  node->node = NULL;
   return SUCCESS;
 }
 
-/*void attachListNodes(Vertex* root, Game** arr, Vertex** list_nodes,
+void attachListNodes(Vertex* root, Game** arr, Vertex** list_nodes,
                      size_t* index) {
   // base case: empty subtree
   if (!root) return;
@@ -89,9 +89,9 @@ ErrorCode list_remove_node(Node** head, Vertex* node) {
   // Move to the next index in the array
   (*index)++;
   attachListNodes(root->right, arr, list_nodes, index);
-}*/
+}
 
-ErrorCode list_rebuild_from_bst(Vertex* node, Node** head) {
+ErrorCode list_rebuild_from_bst(const Vertex* node, Node** head) {
   if (node == NULL) {
     return SUCCESS;
   }
@@ -132,19 +132,20 @@ ErrorCode list_rebuild_from_bst(Vertex* node, Node** head) {
 
   *head = list->node;  // head of the list is the first node in the
 
-  //  index = 0;
-  // attachListNodes(node, gamearr, list, &index);
+  free(gamearr);
+  return SUCCESS;
 }
 
 void print_revenue(const Shop* shop) {
   Node* current = shop->revenue;
+  if (current == NULL) printf("No games to sell");
   while (current != NULL) {
     print_game(current->game);
     current = current->next;
   }
 }
 
-ErrorCode print_game(Game* game) {
+ErrorCode print_game(const Game* game) {
   if (game) {
     io_text_write_game(game, stdout);
     return SUCCESS;
@@ -152,7 +153,7 @@ ErrorCode print_game(Game* game) {
   return INVALID_OBJECT;
 }
 
-void bst_make_array(Vertex* root, Game** arr, size_t* index) {
+void bst_make_array(const Vertex* root, Game** arr, size_t* index) {
   if (!root) return;
   bst_make_array(root->left, arr, index);
   arr[*index] = root->game;

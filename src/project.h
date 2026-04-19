@@ -217,7 +217,7 @@ ErrorCode list_remove_node(Node** head, Vertex* node);
  * @param head Address of the revenue list head pointer.
  * @param err Pointer to an ErrorCode variable to receive error status.
  */
-ErrorCode list_rebuild_from_bst(Vertex* node, Node** head);
+ErrorCode list_rebuild_from_bst(const Vertex* node, Node** head);
 
 /**
  * @brief Attach list nodes to the corresponding BST vertices after rebuilding
@@ -248,7 +248,7 @@ void print_revenue(const Shop* shop);
  * @param game Game to print.
  *
  */
-ErrorCode print_game(Game* game);
+ErrorCode print_game(const Game* game);
 
 /**
  * @brief Flatten the BST into a Game pointer array.
@@ -258,7 +258,7 @@ ErrorCode print_game(Game* game);
  * @param index Index pointer for insertion.
  *
  */
-void bst_make_array(Vertex* root, Game** arr, size_t* index);
+void bst_make_array(const Vertex* root, Game** arr, size_t* index);
 
 /**
  * @brief Free an array of Game objects.
@@ -510,7 +510,7 @@ Game* find_previous(Vertex* vertex);
  * @param depth Indentation depth.
  *
  */
-void debug_print_bst(const Shop* shop, Vertex* vertex, int depth);
+ErrorCode debug_print_bst(const Shop* shop, Vertex* vertex, int depth);
 
 /**
  * @brief Print an human-readable error message corresponding to an ErrorCode.

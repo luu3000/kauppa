@@ -21,12 +21,12 @@ int main(void) {
   init_shop(shop);
 
   int loop = true;
-  char* command = malloc(1000);  // guideline 1.1.I
-  char filename[100];
+  char command[MAX_STRING_LENGTH];  // guideline 1.1.I
+  char filename[MAX_STRING_LENGTH];
   ErrorCode err;
 
   while (loop) {
-    if (!fgets(command, 1000, stdin)) {
+    if (!fgets(command, MAX_STRING_LENGTH, stdin)) {
       break;
     }
     switch (command[0]) {
@@ -38,8 +38,7 @@ int main(void) {
           free(name);
           break;
         }
-        name = strcat(name, ".txt");
-        err = add_game(shop, name, price);
+        err = shop_add_game(shop, name, price);
         if (err != SUCCESS) {
           debug_print_error(err);
         } else {
@@ -56,8 +55,7 @@ int main(void) {
           free(name);
           break;
         }
-        name = strcat(name, ".txt");
-        err = buy_game(shop, name, count);
+        err = shop_buy_game(shop, name, count);
         if (err != SUCCESS) {
           debug_print_error(err);
         } else {
@@ -75,6 +73,7 @@ int main(void) {
           printf("Invalid command W\n");
           break;
         }
+        strcat(filename, ".txt");
         err = io_text_write(filename, shop);
         if (err != SUCCESS) {
           debug_print_error(err);
@@ -87,6 +86,7 @@ int main(void) {
           printf("Invalid command O\n");
           break;
         }
+        strcat(filename, ".txt");
         Shop* new_shop = io_text_read(filename, &err);
         if (err != SUCCESS || new_shop == NULL) {
           debug_print_error(err);
@@ -104,7 +104,6 @@ int main(void) {
   }
 
   free_shop(shop);
-  free(command);
   printf("SUCCESS\n");
   return 0;
 }

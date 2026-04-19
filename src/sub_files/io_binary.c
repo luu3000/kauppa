@@ -19,6 +19,10 @@ ErrorCode io_binary_write_tree(Vertex* node, FILE* file_ptr) {
     return SUCCESS;
   }
 
+  if (node->game == NULL) {
+    return INVALID_OBJECT;
+  }
+
   ErrorCode left = io_binary_write_tree(node->left, file_ptr);
   if (left != SUCCESS) return left;
 
@@ -32,6 +36,8 @@ ErrorCode io_binary_write_tree(Vertex* node, FILE* file_ptr) {
 }
 
 ErrorCode io_binary_write(const char* filename, const Shop* shop) {
+  if (!shop) return INVALID_OBJECT;
+
   FILE* file_ptr = fopen(filename, "wb");
   if (!file_ptr) return FILE_ERROR;
 
@@ -113,6 +119,12 @@ Shop* io_binary_read(const char* filename, ErrorCode* err) {
   size_t capacity = 1;
   Game** array = malloc(capacity * sizeof(Game*));
 
+  if (!array) {
+    if (err) *err = OUT_OF_MEMORY;
+    fclose(file_ptr);
+    return NULL;
+  }
+
   int count = 0;
   Shop* shop = NULL;
 
@@ -162,6 +174,7 @@ Shop* io_binary_read(const char* filename, ErrorCode* err) {
 
   init_shop(shop);
   if (count == 0) {
+    free(array);
     if (err) *err = SUCCESS;
     return shop;
   }

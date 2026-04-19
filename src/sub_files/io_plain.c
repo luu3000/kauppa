@@ -1,6 +1,6 @@
 #include "../project.h"
 
-ErrorCode io_text_write_game(Game* game, FILE* file_ptr) {
+ErrorCode io_text_write_game(const Game* game, FILE* file_ptr) {
   if (fprintf(file_ptr, "\"%s\" %f %f\n", game->name, game->price,
               game->revenue) < 0) {
     return FILE_ERROR;
@@ -62,7 +62,7 @@ Shop* io_text_read(const char* filename, ErrorCode* err) {
   while (fgets(line, sizeof(line), file_ptr)) {
     char namebuf[MAX_STRING_LENGTH];
     double price, revenue;
-    if (sscanf(line, " \"%[^\"]\" %lf %lf ", namebuf, &price, &revenue) != 3) {
+    if (sscanf(line, "\"%[^\"]\" %lf %lf", namebuf, &price, &revenue) != 3) {
       if (err) *err = PARSE_ERROR;
       goto cleanup;
     }
@@ -151,9 +151,9 @@ cleanup:
     free(array);
   }
   if (shop) free_shop(shop);
-  if (err && *err == SUCCESS) {
+  /*if (err && *err == SUCCESS) {
     *err = FILE_ERROR;
-  }
+  }*/
   return NULL;
 }
 

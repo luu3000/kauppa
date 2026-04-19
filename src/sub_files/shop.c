@@ -6,6 +6,7 @@ void init_shop(Shop* shop) {
 }
 
 void free_shop(Shop* shop) {
+  if (!shop) return;
   if (shop->revenue) free_revenue_list(shop->revenue);
   free_bst(shop->root);
   free(shop);
@@ -24,7 +25,9 @@ void free_bst(Vertex* vertex) {
   if (vertex == NULL) return;
   // post-order traversal to free children before parent
   free_bst(vertex->left);
+  vertex->left = NULL;
   free_bst(vertex->right);
+  vertex->right = NULL;
   // Free the Game object owned by this vertex
   free(vertex->game->name);
   free(vertex->game);
@@ -64,7 +67,6 @@ void free_game(Game* game) {
 Vertex* create_vertex(Game* game, ErrorCode* err) {
   Vertex* node = (Vertex*)malloc(sizeof(Vertex));
   if (!node) {
-    if (game) free_game(game);
     if (err) *err = OUT_OF_MEMORY;
     return NULL;
   }
@@ -75,7 +77,7 @@ Vertex* create_vertex(Game* game, ErrorCode* err) {
   return node;
 }
 
-Node* createListNode(Game* game, ErrorCode* err) {
+Node* create_node(Game* game, ErrorCode* err) {
   Node* node = (Node*)malloc(sizeof(Node));
   if (!node) {
     if (err) *err = OUT_OF_MEMORY;
