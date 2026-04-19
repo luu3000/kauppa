@@ -6,7 +6,7 @@ void init_shop(Shop* shop) {
 }
 
 void free_shop(Shop* shop) {
-  free_revenue_list(shop->revenue);
+  if (shop->revenue) free_revenue_list(shop->revenue);
   free_bst(shop->root);
   free(shop);
 }

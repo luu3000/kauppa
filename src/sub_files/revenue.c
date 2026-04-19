@@ -144,7 +144,13 @@ void print_revenue(const Shop* shop) {
   }
 }
 
-void print_game(Game* game) { io_text_write_game(game, stdout); }
+ErrorCode print_game(Game* game) {
+  if (game) {
+    io_text_write_game(game, stdout);
+    return SUCCESS;
+  }
+  return INVALID_OBJECT;
+}
 
 void bst_make_array(Vertex* root, Game** arr, size_t* index) {
   if (!root) return;

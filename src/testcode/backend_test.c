@@ -73,23 +73,17 @@ int main(void) {
     print_revenue(shop);
   }
 
-  /*
-  printf("\n5. Binary I/O\n");
-  write_err = write_binary("kauppa", shop);
-  printf("Write binary: %s\n", write_err == SUCCESS ? "SUCCESS" : "FAILED");
-
   free_shop(shop);
 
-  shop = read_binary("kauppa", &read_err);
+  shop = io_binary_read("kauppa", &read_err);
   printf("Read binary: %s\n", read_err == SUCCESS ? "SUCCESS" : "FAILED");
 
   if (shop) {
     printf("Binary-read shop contents:\n");
-    print_shop(shop);
+    debug_print_shop(shop);
     printf("\nBinary-read revenue:\n");
     print_revenue(shop);
   }
-  */
   // Test edge cases
   printf("\n6. Edge Cases\n");
   // Empty shop

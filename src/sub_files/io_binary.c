@@ -1,6 +1,9 @@
 #include "../project.h"
 
-ErrorCode io_binary_write_game(Game* game, FILE* file_ptr) {
+ErrorCode io_binary_write_game(const Game* game, FILE* file_ptr) {
+  if (!game || !game->name) {
+    return INVALID_OBJECT;
+  }
   size_t len = strlen(game->name);
 
   if (fwrite(&len, sizeof(len), 1, file_ptr) != 1) return FILE_ERROR;
@@ -73,6 +76,11 @@ Game* io_binary_read_game(FILE* file_ptr, ErrorCode* err) {
     free(name);
     goto whaterror;
   }
+  if (price_revenue[0] < 0 || price_revenue[1] < 0) {
+    free(name);
+    if (err) *err = PARSE_ERROR;
+    return NULL;
+  }
 
   Game* game = create_game(name, price_revenue[0], err);
   free(name);
@@ -94,38 +102,52 @@ whaterror:
 }
 
 Shop* io_binary_read(const char* filename, ErrorCode* err) {
+  if (err) *err = SUCCESS;
+
   FILE* file_ptr = fopen(filename, "rb");
   if (!file_ptr) {
     if (err) *err = FILE_ERROR;
     return NULL;
   }
 
-  Game* array = NULL;
+  size_t capacity = 1;
+  Game** array = malloc(capacity * sizeof(Game*));
+
   int count = 0;
   Shop* shop = NULL;
 
   while (1) {
     ErrorCode read_err;
+
     Game* temp = io_binary_read_game(file_ptr, &read_err);
     if (!temp) {
       if (read_err == IO_EOF) {
         break;
       }
-      err = err;  // keep warning-free
       if (err) *err = read_err;
       goto cleanup;
     }
 
-    Game* newarray = realloc(array, sizeof(Game) * (count + 1));
-    if (!newarray) {
-      free_game(temp);
-      if (err) *err = OUT_OF_MEMORY;
-      goto cleanup;
+    // memory efficient
+    /*Game** newarray = realloc(array, sizeof(Game*) * (count + 1));
+     if (!newarray) {
+        free_game(game);
+        if (err) *err = OUT_OF_MEMORY;
+        goto cleanup;
+      }
+      array = newarray;*/
+    // runtime efficiency
+    if (count == capacity) {
+      capacity *= 2;
+      Game** newarray = realloc(array, capacity * sizeof(Game*));
+      if (!newarray) {
+        free_game(temp);
+        if (err) *err = OUT_OF_MEMORY;
+        goto cleanup;
+      }
+      array = newarray;
     }
-
-    array = newarray;
-    array[count] = *temp;
-    free(temp);
+    array[count] = temp;
     count++;
   }
 
@@ -143,14 +165,14 @@ Shop* io_binary_read(const char* filename, ErrorCode* err) {
     if (err) *err = SUCCESS;
     return shop;
   }
+  qsort(array, count, sizeof(Game*), cmp_game_name);
+  shop->root = bst_build_from_sorted_array(array, 0, count - 1, err);
 
-  shop->root = bst_build_from_sorted_array(&array, 0, count - 1, err);
   if (!shop->root) {
     if (err && *err == SUCCESS) *err = OUT_OF_MEMORY;
     goto cleanup;
   }
-
-  free_game_array(array, count);
+  free(array);
   array = NULL;
 
   ErrorCode list_err = list_rebuild_from_bst(shop->root, &shop->revenue);
@@ -164,7 +186,12 @@ Shop* io_binary_read(const char* filename, ErrorCode* err) {
 
 cleanup:
   if (file_ptr) fclose(file_ptr);
-  if (array) free_game_array(array, count);
+  if (array) {
+    for (int i = 0; i < count; i++) {
+      free_game(array[i]);
+    }
+    free(array);
+  }
   if (shop) free_shop(shop);
   return NULL;
 }

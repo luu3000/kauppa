@@ -248,7 +248,7 @@ void print_revenue(const Shop* shop);
  * @param game Game to print.
  *
  */
-void print_game(Game* game);
+ErrorCode print_game(Game* game);
 
 /**
  * @brief Flatten the BST into a Game pointer array.
@@ -357,7 +357,7 @@ Vertex* bst_build_from_sorted_array(Game** arr, int start, int end,
  * @return SUCCESS on success, FILE_ERROR on failure.
  *
  */
-ErrorCode io_text_write_game(Game* game, FILE* file_ptr);
+ErrorCode io_text_write_game(const Game* game, FILE* file_ptr);
 
 /**
  * @brief Recursively write the BST as plaintext using in-order traversal.
@@ -407,7 +407,7 @@ int cmp_game_name(const void* a, const void* b);
  * @param file_ptr Output file.
  * @return SUCCESS on success, FILE_ERROR on failure.
  */
-ErrorCode io_binary_write_game(Game* game, FILE* file_ptr);
+ErrorCode io_binary_write_game(const Game* game, FILE* file_ptr);
 
 /**
  * @brief Recursively write the BST to a binary file.

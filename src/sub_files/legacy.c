@@ -1,8 +1,9 @@
 #include "../project.h"
 
 void legacy_print_revenue(const Shop* shop) {
-  size_t size_of_tree = treeSize(shop->root);
-
+  // find the size of tree
+  size_t size_of_tree = bst_size(shop->root);
+  // make list
   Game** gamearr = (Game**)calloc(size_of_tree, sizeof(Game*));
   if (!gamearr) {
     return;
@@ -10,8 +11,9 @@ void legacy_print_revenue(const Shop* shop) {
   int index = 0;
   makeList(shop->root, gamearr, &index);
   size_t size_of_list = index;
-
-  qsort(gamearr, size_of_list, sizeof(Game*), cmprevenue);
+  // sort
+  qsort(gamearr, size_of_list, sizeof(Game*), list_revenue_compare);
+  // print
   for (size_t i = 0; i < size_of_list; i++) {
     printGame(gamearr[i]);
   }
@@ -48,6 +50,7 @@ ErrorCode legacy_remove_revenue(Node** head, Game* game) {
 }
 
 Game* legacy_find_previous(Node* head, Game* game) {
+  // go through linked list
   while (head && head->next) {
     if (head->next->game == game) return head->game;
     head = head->next;

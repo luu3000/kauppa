@@ -1,7 +1,7 @@
 #include "../project.h"
 
 ErrorCode io_text_write_game(Game* game, FILE* file_ptr) {
-  if (fprintf(file_ptr, "\"%s\" %.2f %.2f\n", game->name, game->price,
+  if (fprintf(file_ptr, "\"%s\" %f %f\n", game->name, game->price,
               game->revenue) < 0) {
     return FILE_ERROR;
   }
@@ -48,16 +48,27 @@ Shop* io_text_read(const char* filename, ErrorCode* err) {
     return NULL;
   }
 
-  Game** array = NULL;
   int count = 0;
-  Shop* shop = NULL;
 
-  char line[1000];
+  char line[MAX_STRING_LENGTH];
+  size_t capacity = 1;
+  Game** array = malloc(capacity * sizeof(Game*));
+  if (!array) {
+    if (err) *err = OUT_OF_MEMORY;
+    fclose(file_ptr);
+    return NULL;
+  }
+
   while (fgets(line, sizeof(line), file_ptr)) {
-    char namebuf[996];
+    char namebuf[MAX_STRING_LENGTH];
     double price, revenue;
     if (sscanf(line, " \"%[^\"]\" %lf %lf ", namebuf, &price, &revenue) != 3) {
-      continue;
+      if (err) *err = PARSE_ERROR;
+      goto cleanup;
+    }
+    if (price < 0 || revenue < 0) {
+      if (err) *err = PARSE_ERROR;
+      goto cleanup;
     }
 
     Game* game = create_game(namebuf, price, err);
@@ -65,22 +76,39 @@ Shop* io_text_read(const char* filename, ErrorCode* err) {
       goto cleanup;
     }
     game->revenue = revenue;
-
-    Game** newarray = realloc(array, sizeof(Game*) * (count + 1));
-    if (!newarray) {
-      free_game(game);
-      if (err) *err = OUT_OF_MEMORY;
-      goto cleanup;
+    // memory efficient
+    /*Game** newarray = realloc(array, sizeof(Game*) * (count + 1));
+     if (!newarray) {
+        free_game(game);
+        if (err) *err = OUT_OF_MEMORY;
+        goto cleanup;
+      }
+      array = newarray;*/
+    // runtime efficiency
+    if (count == capacity) {
+      capacity *= 2;
+      Game** newarray = realloc(array, capacity * sizeof(Game*));
+      if (!newarray) {
+        free_game(game);
+        if (err) *err = OUT_OF_MEMORY;
+        goto cleanup;
+      }
+      array = newarray;
     }
-    array = newarray;
     array[count] = game;
     count++;
+  }
+
+  if (ferror(file_ptr)) {
+    if (err) *err = FILE_ERROR;
+    goto cleanup;
   }
 
   fclose(file_ptr);
   file_ptr = NULL;
 
-  shop = (Shop*)malloc(sizeof(Shop));
+  Shop* shop = (Shop*)malloc(sizeof(Shop));
+
   if (!shop) {
     if (err) *err = OUT_OF_MEMORY;
     goto cleanup;
@@ -88,6 +116,7 @@ Shop* io_text_read(const char* filename, ErrorCode* err) {
   init_shop(shop);
 
   if (count == 0) {
+    free(array);
     if (err) *err = SUCCESS;
     return shop;
   }

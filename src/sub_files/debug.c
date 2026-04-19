@@ -1,6 +1,7 @@
 #include "../project.h"
 
 void debug_print_shop(const Shop* shop) {
+  // call recursion
   debug_print_bst(shop, shop->root, 0);
 }
 
@@ -11,20 +12,23 @@ void debug_print_tabs(int num) {
 }
 
 Game* find_previous(Vertex* vertex) {
-  if (vertex->node) {
-    if (vertex->node->prev) {
-      return vertex->node->prev->game;
+  if (vertex->node) {                   // test node exists
+    if (vertex->node->prev) {           // test it has previous
+      return vertex->node->prev->game;  // return the game
     }
   }
   return NULL;
 }
 
 void debug_print_bst(const Shop* shop, Vertex* vertex, int depth) {
-  if (vertex == NULL) return;
+  // if (vertex == NULL) return; // Basecase optional as the if statments mean
+  // never called
 
+  // whoami
   debug_print_tabs(depth);
   print_game(vertex->game);
 
+  // neighbor in linked list
   debug_print_tabs(depth);
   Game* prev = find_previous(vertex);
   if (prev) {
@@ -33,12 +37,13 @@ void debug_print_bst(const Shop* shop, Vertex* vertex, int depth) {
     printf("is connected to <none>\n");
   }
 
-  if (vertex->left != NULL) {
+  // recursion
+  if (vertex->left != NULL) {  // do left
     debug_print_tabs(depth + 1);
     printf("left\n");
     debug_print_bst(shop, vertex->left, depth + 1);
   }
-  if (vertex->right != NULL) {
+  if (vertex->right != NULL) {  // do right
     debug_print_tabs(depth + 1);
     printf("right\n");
     debug_print_bst(shop, vertex->right, depth + 1);
