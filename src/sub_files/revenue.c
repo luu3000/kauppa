@@ -71,26 +71,6 @@ ErrorCode list_remove_node(Node** head, Vertex* node) {
   return SUCCESS;
 }
 
-void attachListNodes(Vertex* root, Game** arr, Vertex** list_nodes,
-                     size_t* index) {
-  // base case: empty subtree
-  if (!root) return;
-  // in-order traversal to match sorted array order
-  attachListNodes(root->left, arr, list_nodes, index);
-
-  // Find the corresponding list node for this vertex's game
-  Game* game = root->game;
-  for (size_t i = 0; i < *index; i++) {
-    if (arr[i] == game) {
-      root->node = list_nodes[i]->node;  // attach the list node pointer
-      break;
-    }
-  }
-  // Move to the next index in the array
-  (*index)++;
-  attachListNodes(root->right, arr, list_nodes, index);
-}
-
 ErrorCode list_rebuild_from_bst(const Vertex* node, Node** head) {
   if (node == NULL) {
     *head = NULL;
@@ -142,6 +122,26 @@ void print_revenue(const Shop* shop) {
     print_game(current->game);
     current = current->next;
   }
+}
+
+void attachListNodes(Vertex* root, Game** arr, Vertex** list_nodes,
+                     size_t* index) {
+  // base case: empty subtree
+  if (!root) return;
+  // in-order traversal to match sorted array order
+  attachListNodes(root->left, arr, list_nodes, index);
+
+  // Find the corresponding list node for this vertex's game
+  Game* game = root->game;
+  for (size_t i = 0; i < *index; i++) {
+    if (arr[i] == game) {
+      root->node = list_nodes[i]->node;  // attach the list node pointer
+      break;
+    }
+  }
+  // Move to the next index in the array
+  (*index)++;
+  attachListNodes(root->right, arr, list_nodes, index);
 }
 
 ErrorCode print_game(const Game* game) {

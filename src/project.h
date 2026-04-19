@@ -123,6 +123,8 @@ typedef enum ErrorCode {
  * @brief Initialize an empty Shop.
  *
  * @param shop Pointer to a Shop object allocated by the caller.
+ *
+ *
  */
 void init_shop(Shop* shop);
 

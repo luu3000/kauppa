@@ -1,1 +1,1 @@
-This is code;
+This is code for a game shop implemented in c for

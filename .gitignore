@@ -1,9 +1,29 @@
 .vscode/
-
-*.o
 *.exe
-*.out
 /build/
 /bin/
 /obj/
 project.code-workspace
+
+# Compiled executables and binaries (files with no extension)
+src/project
+src/testcode/backend_test
+src/testcode/kauppa
+src/testcode/retest
+
+# Object files
+*.o
+*.obj
+*.txt
+
+# Doxygen generated output
+html/
+latex/
+
+# Editor temp files
+*~
+*.swp
+*.swo
+
+# OS metadata
+.DS_Store

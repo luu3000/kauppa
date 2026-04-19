@@ -20,6 +20,11 @@ void free_revenue_list(Node* head) {
   }
 }
 
+void free_game(Game* game) {
+  free(game->name);
+  free(game);
+}
+
 void free_bst(Vertex* vertex) {
   // base case: empty subtree
   if (vertex == NULL) return;
@@ -57,11 +62,6 @@ Game* create_game(const char* name, double price, ErrorCode* err) {
   game->revenue = 0;
 
   return game;
-}
-
-void free_game(Game* game) {
-  free(game->name);
-  free(game);
 }
 
 Vertex* create_vertex(Game* game, ErrorCode* err) {
