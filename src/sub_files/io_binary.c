@@ -74,7 +74,7 @@ Game* io_binary_read_game(FILE* file_ptr, ErrorCode* err) {
     goto whaterror;
   }
 
-  Game* game = createGame(name, price_revenue[0], err);
+  Game* game = create_game(name, price_revenue[0], err);
   free(name);
   if (!game) {
     if (err) *err = OUT_OF_MEMORY;
@@ -118,7 +118,7 @@ Shop* io_binary_read(const char* filename, ErrorCode* err) {
 
     Game* newarray = realloc(array, sizeof(Game) * (count + 1));
     if (!newarray) {
-      freeGame(temp);
+      free_game(temp);
       if (err) *err = OUT_OF_MEMORY;
       goto cleanup;
     }
@@ -138,7 +138,7 @@ Shop* io_binary_read(const char* filename, ErrorCode* err) {
     goto cleanup;
   }
 
-  initShop(shop);
+  init_shop(shop);
   if (count == 0) {
     if (err) *err = SUCCESS;
     return shop;
@@ -165,6 +165,6 @@ Shop* io_binary_read(const char* filename, ErrorCode* err) {
 cleanup:
   if (file_ptr) fclose(file_ptr);
   if (array) free_game_array(array, count);
-  if (shop) freeShop(shop);
+  if (shop) free_shop(shop);
   return NULL;
 }

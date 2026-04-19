@@ -152,6 +152,13 @@ void free_revenue_list(Node* head);
 void free_game(Game* game);
 
 /**
+ * @brief Recursively free the binary search tree.
+ *
+ * @param node Root of the subtree.
+ */
+void free_bst(Vertex* node);
+
+/**
  * @brief Create a new Game object.
  *
  * @param name Name of the game.
@@ -211,6 +218,21 @@ ErrorCode list_remove_node(Node** head, Vertex* node);
  * @param err Pointer to an ErrorCode variable to receive error status.
  */
 ErrorCode list_rebuild_from_bst(Vertex* node, Node** head);
+
+/**
+ * @brief Attach list nodes to the corresponding BST vertices after rebuilding
+ * the revenue list.
+ * @param root Root of the BST.
+ * @param arr Array of Game pointers corresponding to the BST vertices in sorted
+ * order.
+ * @param list_nodes Array of Vertex pointers corresponding to the list nodes in
+ * sorted order.
+ * @param index Pointer to the current index in the arrays.
+ *
+ *
+ */
+void attachListNodes(Vertex* root, Game** arr, Vertex** list_nodes,
+                     size_t* index);
 
 /**
  * @brief Print all games sorted by revenue.
@@ -320,16 +342,8 @@ size_t bst_size(const Vertex* root);
  * @param err Pointer to an ErrorCode variable to receive error status.
  * @return Root of the balanced subtree.
  */
-
 Vertex* bst_build_from_sorted_array(Game** arr, int start, int end,
                                     ErrorCode* err);
-
-/**
- * @brief Recursively free the binary search tree.
- *
- * @param node Root of the subtree.
- */
-void bst_free(Vertex* node);
 
 /* ------------------------------------------------------------------------- */
 /** @file io_plain.c containing the implementation of plaintext I/O functions */
@@ -481,6 +495,12 @@ void debug_print_shop(const Shop* shop);
  * @param num Number of tabs.
  */
 void debug_print_tabs(int num);
+
+/**
+ * @brief gives pointer to previous game in linked list
+ *
+ */
+Game* find_previous(Vertex* vertex);
 
 /**
  * @brief Print the BST for debugging.

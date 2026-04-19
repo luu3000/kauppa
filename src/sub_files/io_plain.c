@@ -8,24 +8,18 @@ ErrorCode io_text_write_game(Game* game, FILE* file_ptr) {
   return SUCCESS;
 }
 
-#define iferror_or_success(expr) \
-  do {                           \
-    ErrorCode _err = (expr);     \
-    if (_err != SUCCESS) {       \
-      return _err;               \
-    }                            \
+#define TRY(expr)                     \
+  do {                                \
+    ErrorCode _err = (expr);          \
+    if (_err != SUCCESS) return _err; \
   } while (0)
-
 ErrorCode io_text_write_tree(Vertex* node, FILE* file_ptr) {
   if (node == NULL) {
     return SUCCESS;
   }
-  ErrorCode left = io_text_write_tree(node->left, file_ptr);
-  iferror_or_success(left);
-  ErrorCode current = io_text_write_game(node->game, file_ptr);
-  iferror_or_success(current);
-  ErrorCode right = io_text_write_tree(node->right, file_ptr);
-  iferror_or_success(right);
+  TRY(io_text_write_tree(node->left, file_ptr));
+  TRY(io_text_write_game(node->game, file_ptr));
+  TRY(io_text_write_tree(node->right, file_ptr));
 
   return SUCCESS;
 }
@@ -47,6 +41,7 @@ ErrorCode io_text_write(const char* filename, const Shop* shop) {
 }
 
 Shop* io_text_read(const char* filename, ErrorCode* err) {
+  if (err) *err = SUCCESS;
   FILE* file_ptr = fopen(filename, "r");
   if (!file_ptr) {
     if (err) *err = FILE_ERROR;
@@ -56,12 +51,6 @@ Shop* io_text_read(const char* filename, ErrorCode* err) {
   Game** array = NULL;
   int count = 0;
   Shop* shop = NULL;
-
-  array = malloc(sizeof(Game*));
-  if (!array) {
-    if (err) *err = OUT_OF_MEMORY;
-    goto cleanup;
-  }
 
   char line[1000];
   while (fgets(line, sizeof(line), file_ptr)) {
@@ -73,7 +62,6 @@ Shop* io_text_read(const char* filename, ErrorCode* err) {
 
     Game* game = create_game(namebuf, price, err);
     if (!game) {
-      if (err) *err = OUT_OF_MEMORY;
       goto cleanup;
     }
     game->revenue = revenue;
@@ -101,7 +89,7 @@ Shop* io_text_read(const char* filename, ErrorCode* err) {
 
   if (count == 0) {
     if (err) *err = SUCCESS;
-    goto cleanup;
+    return shop;
   }
 
   // Sort array by name for balanced tree
@@ -129,11 +117,14 @@ cleanup:
   if (file_ptr) fclose(file_ptr);
   if (array) {
     for (int i = 0; i < count; i++) {
-      freeGame(array[i]);
+      free_game(array[i]);
     }
     free(array);
   }
-  if (shop) freeShop(shop);
+  if (shop) free_shop(shop);
+  if (err && *err == SUCCESS) {
+    *err = FILE_ERROR;
+  }
   return NULL;
 }
 

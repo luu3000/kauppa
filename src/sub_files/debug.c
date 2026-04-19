@@ -4,20 +4,29 @@ void debug_print_shop(const Shop* shop) {
   debug_print_bst(shop, shop->root, 0);
 }
 
-void debug_print_tab(int num) {
+void debug_print_tabs(int num) {
   for (int i = 0; i < num; i++) {
     printf("\t");
   }
 }
 
+Game* find_previous(Vertex* vertex) {
+  if (vertex->node) {
+    if (vertex->node->prev) {
+      return vertex->node->prev->game;
+    }
+  }
+  return NULL;
+}
+
 void debug_print_bst(const Shop* shop, Vertex* vertex, int depth) {
   if (vertex == NULL) return;
 
-  debug_print_tab(depth);
-  printGame(vertex->game);
+  debug_print_tabs(depth);
+  print_game(vertex->game);
 
-  debug_print_tab(depth);
-  Game* prev = legacy_find_previous(shop->revenue, vertex->game);
+  debug_print_tabs(depth);
+  Game* prev = find_previous(vertex);
   if (prev) {
     printf("is connected to %s\n", prev->name);
   } else {
@@ -25,18 +34,18 @@ void debug_print_bst(const Shop* shop, Vertex* vertex, int depth) {
   }
 
   if (vertex->left != NULL) {
-    debug_print_tab(depth + 1);
+    debug_print_tabs(depth + 1);
     printf("left\n");
     debug_print_bst(shop, vertex->left, depth + 1);
   }
   if (vertex->right != NULL) {
-    debug_print_tab(depth + 1);
+    debug_print_tabs(depth + 1);
     printf("right\n");
     debug_print_bst(shop, vertex->right, depth + 1);
   }
 }
 
-void printError(ErrorCode err) {
+void debug_print_error(ErrorCode err) {
   switch (err) {
     case SUCCESS:
       printf("SUCCESS\n");
@@ -69,6 +78,6 @@ void printError(ErrorCode err) {
       printf("an invalid argument was provided to a function\n");
       break;
     default:
-      printf("an unknown error occurred\n");
+      printf("an unknown error occurred %d\n", err);
   }
 }

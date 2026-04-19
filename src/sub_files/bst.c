@@ -18,7 +18,7 @@ ErrorCode shop_add_game(Shop* shop, const char* name, double price) {
   shop->root = result;
   if (err != SUCCESS) {
     free_game(game);
-    free_vertex(vertex);
+    free(vertex);
     return err;
   }
   // Insert the game into the revenue list
@@ -55,7 +55,7 @@ ErrorCode shop_buy_game(Shop* shop, const char* name, int count) {
     return err;
   }
   // Update the revenue list: remove old entry...
-  err = list_remove_node(&shop->revenue, vertex->node);
+  err = list_remove_node(&shop->revenue, vertex);
   vertex->node = NULL;
   if (err != SUCCESS) {
     return err;
@@ -113,21 +113,9 @@ Vertex* bst_build_from_sorted_array(Game** arr, int start, int end,
   vertex->right = bst_build_from_sorted_array(arr, mid + 1, end, err);
   // If either subtree failed to build, free the current vertex and return NULL
   if ((mid > start && !vertex->left) || (mid < end && !vertex->right)) {
-    freeTree(vertex);
+    free_bst(vertex);
     return NULL;
   }
   if (err) *err = SUCCESS;
   return vertex;
-}
-
-void bst_free(Vertex* vertex) {
-  // base case: empty subtree
-  if (vertex == NULL) return;
-  // post-order traversal to free children before parent
-  freeTree(vertex->left);
-  freeTree(vertex->right);
-  // Free the Game object owned by this vertex
-  free(vertex->game->name);
-  free(vertex->game);
-  free(vertex);
 }

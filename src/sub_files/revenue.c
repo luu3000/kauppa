@@ -71,22 +71,25 @@ ErrorCode list_remove_node(Node** head, Vertex* node) {
   return SUCCESS;
 }
 
-void attachListNodes(Vertex* root, Game** arr, Node* list_nodes,
+/*void attachListNodes(Vertex* root, Game** arr, Vertex** list_nodes,
                      size_t* index) {
+  // base case: empty subtree
   if (!root) return;
-
+  // in-order traversal to match sorted array order
   attachListNodes(root->left, arr, list_nodes, index);
 
-  // arr[*index] corresponds to this root->game
-  // list_nodes[*index] is the newly created List node
-  if (root->game == arr[*index]) {
-    root->node = &list_nodes[*index];
+  // Find the corresponding list node for this vertex's game
+  Game* game = root->game;
+  for (size_t i = 0; i < *index; i++) {
+    if (arr[i] == game) {
+      root->node = list_nodes[i]->node;  // attach the list node pointer
+      break;
+    }
   }
-
+  // Move to the next index in the array
   (*index)++;
-
   attachListNodes(root->right, arr, list_nodes, index);
-}
+}*/
 
 ErrorCode list_rebuild_from_bst(Vertex* node, Node** head) {
   if (node == NULL) {
@@ -129,19 +132,19 @@ ErrorCode list_rebuild_from_bst(Vertex* node, Node** head) {
 
   *head = list->node;  // head of the list is the first node in the
 
-  index = 0;
-  attachListNodes(node, gamearr, list, &index);
+  //  index = 0;
+  // attachListNodes(node, gamearr, list, &index);
 }
 
-void printRevenue(const Shop* shop) {
+void print_revenue(const Shop* shop) {
   Node* current = shop->revenue;
   while (current != NULL) {
-    printGame(current->game);
+    print_game(current->game);
     current = current->next;
   }
 }
 
-void printGame(Game* game) { write_game_plaintext(game, stdout); }
+void print_game(Game* game) { io_text_write_game(game, stdout); }
 
 void bst_make_array(Vertex* root, Game** arr, size_t* index) {
   if (!root) return;

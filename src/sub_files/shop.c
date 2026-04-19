@@ -6,8 +6,8 @@ void init_shop(Shop* shop) {
 }
 
 void free_shop(Shop* shop) {
-  freeRevenueList(shop->revenue);
-  freeTree(shop->root);
+  free_revenue_list(shop->revenue);
+  free_bst(shop->root);
   free(shop);
 }
 
@@ -17,6 +17,18 @@ void free_revenue_list(Node* head) {
     head = head->next;
     free(tmp);
   }
+}
+
+void free_bst(Vertex* vertex) {
+  // base case: empty subtree
+  if (vertex == NULL) return;
+  // post-order traversal to free children before parent
+  free_bst(vertex->left);
+  free_bst(vertex->right);
+  // Free the Game object owned by this vertex
+  free(vertex->game->name);
+  free(vertex->game);
+  free(vertex);
 }
 
 Game* create_game(const char* name, double price, ErrorCode* err) {
